@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FakeMeeting — Meeting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/meeting.css"/>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="top-bar" id="top-bar">
+  <div class="top-left">
+    <div class="meeting-badge">
+      <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="10" fill="#2D8CFF"/>
+        <path d="M8 16h20a4 4 0 0 1 4 4v8l8-5v10l-8-5v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V20a4 4 0 0 1 4-4z" fill="white"/>
+      </svg>
+      <span id="display-meeting-id">—</span>
+    </div>
+    <div class="rec-badge hidden" id="rec-badge">
+      <span class="rec-dot"></span> REC
+    </div>
+    <div class="share-badge hidden" id="share-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3l-1 1v1h12v-1l-1-1h3a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H4V5h16v11z"/></svg>
+      Sharing
+    </div>
+  </div>
+  <div class="top-center">
+    <span class="timer" id="timer">00:00</span>
+    <span class="top-sep">·</span>
+    <span class="network-badge">HD</span>
+  </div>
+  <div class="top-right">
+    <button class="view-toggle" id="view-toggle" onclick="toggleView()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm0 10h8v8H3zM13 3h8v8h-8zm0 10h8v8h-8z"/></svg>
+      <span id="view-label">Gallery</span>
+    </button>
+  </div>
+</header>
+
+<!-- ── MAIN AREA ── -->
+<div class="main-area" id="main-area">
+
+  <!-- Video Grid -->
+  <div class="video-area" id="video-area">
+    <div class="video-grid" id="video-grid">
+      <!-- Tiles injected by JS -->
+    </div>
+    <!-- Floating reaction -->
+    <div class="float-reaction hidden" id="float-reaction"></div>
+  </div>
+
+  <!-- Side Panel (Chat / Participants) -->
+  <aside class="side-panel hidden" id="side-panel">
+
+    <!-- Panel Tabs -->
+    <div class="panel-tabs">
+      <button class="panel-tab active" id="tab-chat" onclick="switchTab('chat')">Chat</button>
+      <button class="panel-tab" id="tab-participants" onclick="switchTab('participants')">
+        Participants <span class="p-count" id="p-count-badge">0</span>
+      </button>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-content" id="content-chat">
+      <!-- Who am I sending as? -->
+      <div class="send-as-bar">
+        <span class="send-as-label">Sending as:</span>
+        <select id="send-as-select" class="send-as-select"></select>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-footer">
+        <div class="chat-input-wrap">
+          <textarea id="chat-input" placeholder="Send a message to everyone..." rows="1" onkeydown="chatKeydown(event)"></textarea>
+          <button class="send-btn" onclick="sendChatMessage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARTICIPANTS TAB -->
+    <div class="tab-content hidden" id="content-participants">
+      <div class="p-search-wrap">
+        <input type="text" id="p-search" placeholder="Search participants…" oninput="filterParticipants(this.value)"/>
+      </div>
+      <div class="participant-list" id="participant-list"></div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-left">
+    <!-- Mic -->
+    <div class="tool-wrap">
+      <button class="tool-btn" id="btn-mic" onclick="toggleMic()" title="Mute/Unmute">
+        <span class="tool-icon" id="icon-mic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V21h2v-3.07A7 7 0 0 0 19 11h-2z"/></svg>
+        </span>
+        <span class="tool-label" id="label-mic">Mute</span>
+      </button>
+    </div>
+
+    <!-- Camera -->
+    <div class="tool-wrap">
+      <button class="tool-btn" id="btn-cam" onclick="toggleCamera()" title="Start/Stop Video">
+        <span class="tool-icon" id="icon-cam">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        </span>
+        <span class="tool-label" id="label-cam">Stop Video</span>
+      </button>
+    </div>
+
+    <!-- Share -->
+    <div class="tool-wrap">
+      <button class="tool-btn" id="btn-share" onclick="toggleShare()" title="Share Screen">
+        <span class="tool-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3l-1 1v1h12v-1l-1-1h3a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H4V5h16v11z"/></svg>
+        </span>
+        <span class="tool-label">Share Screen</span>
+      </button>
+    </div>
+
+    <!-- Record -->
+    <div class="tool-wrap">
+      <button class="tool-btn" id="btn-rec" onclick="toggleRecord()" title="Record">
+        <span class="tool-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8" opacity="0.3"/><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+        <span class="tool-label" id="label-rec">Record</span>
+      </button>
+    </div>
+
+    <!-- Reactions -->
+    <div class="tool-wrap reaction-wrap">
+      <button class="tool-btn" onclick="toggleReactionMenu()" title="Reactions">
+        <span class="tool-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+        </span>
+        <span class="tool-label">Reactions</span>
+      </button>
+      <div class="reaction-menu hidden" id="reaction-menu">
+        <span onclick="sendReaction('👍')">👍</span>
+        <span onclick="sendReaction('👏')">👏</span>
+        <span onclick="sendReaction('❤️')">❤️</span>
+        <span onclick="sendReaction('😂')">😂</span>
+        <span onclick="sendReaction('😮')">😮</span>
+        <span onclick="sendReaction('🎉')">🎉</span>
+        <span onclick="sendReaction('🙌')">🙌</span>
+        <span onclick="sendReaction('🔥')">🔥</span>
+      </div>
+    </div>
+
+    <!-- Raise Hand -->
+    <div class="tool-wrap">
+      <button class="tool-btn" id="btn-hand" onclick="toggleHand()" title="Raise/Lower Hand">
+        <span class="tool-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M21 7c0-1.38-1.12-2.5-2.5-2.5-.17 0-.34.02-.5.05V4c0-1.38-1.12-2.5-2.5-2.5-.23 0-.46.03-.67.09C14.46 .64 13.56 0 12.5 0 11.12 0 10 1.12 10 2.5V8c-.16-.03-.33-.05-.5-.05C8.12 7.95 7 9.07 7 10.45v5.89C7 19.48 9.52 22 12.66 22H14c3.31 0 6-2.69 6-6V9.5C20 8.12 18.88 7 17.5 7z"/></svg>
+        </span>
+        <span class="tool-label" id="label-hand">Raise Hand</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar-center">
+    <!-- Chat -->
+    <button class="tool-btn panel-btn" id="btn-chat" onclick="togglePanel('chat')" title="Chat">
+      <span class="tool-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+        <span class="badge hidden" id="chat-badge">0</span>
+      </span>
+      <span class="tool-label">Chat</span>
+    </button>
+
+    <!-- Participants -->
+    <button class="tool-btn panel-btn" id="btn-participants" onclick="togglePanel('participants')" title="Participants">
+      <span class="tool-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      </span>
+      <span class="tool-label">Participants</span>
+    </button>
+  </div>
+
+  <div class="toolbar-right">
+    <button class="leave-btn" onclick="showLeaveModal()">Leave</button>
+  </div>
+</div>
+
+<!-- ── LEAVE MODAL ── -->
+<div class="modal-overlay hidden" id="leave-modal">
+  <div class="modal">
+    <h3>Leave meeting?</h3>
+    <p>Are you sure you want to leave this meeting?</p>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="hideLeaveModal()">Cancel</button>
+      <button class="btn-danger" onclick="leaveMeeting()">Leave Meeting</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PARTICIPANT CONTEXT MENU ── -->
+<div class="ctx-menu hidden" id="ctx-menu">
+  <div class="ctx-item" id="ctx-mute" onclick="ctxAction('toggle_mute')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/></svg>
+    <span id="ctx-mute-label">Mute</span>
+  </div>
+  <div class="ctx-item" id="ctx-video" onclick="ctxAction('toggle_video')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+    <span id="ctx-video-label">Stop Video</span>
+  </div>
+  <div class="ctx-item" id="ctx-chat" onclick="ctxChatWith()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+    Chat with
+  </div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item ctx-danger" onclick="ctxAction('remove')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    Remove from meeting
+  </div>
+</div>
+
+<script src="/static/js/meeting.js"></script>
+</body>
+</html>

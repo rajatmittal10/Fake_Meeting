@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FakeMeeting — Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/setup.css"/>
+</head>
+<body>
+<div class="page">
+
+  <!-- Left brand panel -->
+  <aside class="brand-panel">
+    <div class="brand-inner">
+      <div class="meeting-logo">
+        <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#2D8CFF"/>
+          <path d="M8 16h20a4 4 0 0 1 4 4v8l8-5v10l-8-5v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V20a4 4 0 0 1 4-4z" fill="white"/>
+        </svg>
+        <span>FakeMeeting</span>
+      </div>
+      <h1 class="brand-title">Start or join<br>a meeting</h1>
+      <p class="brand-sub">Connect face-to-face, share ideas, and collaborate — all in one place.</p>
+      <ul class="feature-list">
+        <li><span class="dot"></span>HD video for every participant</li>
+        <li><span class="dot"></span>Upload real photos per person</li>
+        <li><span class="dot"></span>Live in-meeting chat</li>
+        <li><span class="dot"></span>Chat as any participant</li>
+        <li><span class="dot"></span>Full host + participant controls</li>
+        <li><span class="dot"></span>Reactions, raise hand, recording</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Right form panel -->
+  <main class="form-panel">
+    <div class="form-card">
+
+      <!-- Step indicator -->
+      <div class="steps">
+        <div class="step active" id="step-dot-1"><span>1</span></div>
+        <div class="step-line"></div>
+        <div class="step" id="step-dot-2"><span>2</span></div>
+        <div class="step-line"></div>
+        <div class="step" id="step-dot-3"><span>3</span></div>
+      </div>
+
+      <!-- STEP 1: Host Info -->
+      <div class="step-section" id="step-1">
+        <h2 class="step-title">Your Profile</h2>
+        <p class="step-desc">Set up how you appear in the meeting.</p>
+
+        <div class="host-row">
+          <div class="avatar-upload" id="host-avatar-wrap">
+            <div class="avatar-circle" id="host-preview-circle">
+              <div class="avatar-initials" id="host-initials">?</div>
+              <img id="host-preview-img" class="hidden" alt=""/>
+            </div>
+            <div class="avatar-overlay">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.17L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+            </div>
+            <input type="file" id="host-photo-input" accept="image/*" class="hidden"/>
+          </div>
+          <div class="host-fields">
+            <div class="field-group">
+              <label>Your Name <span class="req">*</span></label>
+              <input type="text" id="host-name" placeholder="Enter your display name" autocomplete="off"/>
+              <span class="field-err" id="err-host-name"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Meeting ID <span class="req">*</span></label>
+            <input type="text" id="meeting-id" value="862-4821-0193" placeholder="xxx-xxxx-xxxx"/>
+            <span class="field-err" id="err-meeting-id"></span>
+          </div>
+          <div class="field-group">
+            <label>Passcode</label>
+            <input type="password" id="passcode" placeholder="Optional"/>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="goStep(2)">Continue →</button>
+      </div>
+
+      <!-- STEP 2: Participants count -->
+      <div class="step-section hidden" id="step-2">
+        <h2 class="step-title">Participants</h2>
+        <p class="step-desc">How many other people will join this meeting?</p>
+
+        <div class="counter-wrap">
+          <button class="counter-btn" onclick="adjustCount(-1)">−</button>
+          <div class="counter-display">
+            <span id="count-display">3</span>
+            <span class="count-label">participants</span>
+          </div>
+          <button class="counter-btn" onclick="adjustCount(1)">+</button>
+        </div>
+        <input type="range" id="count-slider" min="1" max="24" value="3" oninput="setCount(this.value)" class="slider"/>
+
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+          <button class="btn-primary" onclick="goStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Name + Photo each participant -->
+      <div class="step-section hidden" id="step-3">
+        <h2 class="step-title">Add Participants</h2>
+        <p class="step-desc">Name and add a photo for each participant.</p>
+
+        <div class="participant-grid" id="participant-grid">
+          <!-- injected by JS -->
+        </div>
+
+        <div class="btn-row" style="margin-top:24px">
+          <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+          <button class="btn-primary" id="join-btn" onclick="startMeeting()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            Join Meeting
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/static/js/setup.js"></script>
+</body>
+</html>

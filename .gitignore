@@ -1,0 +1,22 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.flaskenv
+
+# Local upload data
+static/uploads/*
+!static/uploads/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
